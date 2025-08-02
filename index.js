@@ -16,7 +16,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173"], // your frontend
+    origin: ["https://socialnetwork-frontend-psi.vercel.app"], // your frontend
     methods: ["GET", "POST"],
   },
 });
@@ -49,7 +49,12 @@ app.set("io", io);
 
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "https://socialnetwork-frontend-psi.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
