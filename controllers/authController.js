@@ -7,9 +7,9 @@ exports.registerUser = async (req, res) => {
   try {
     console.log("🔹 Register request body:", req.body);
 
-    const { name, email, password } = req.body;
+    const { name, username, email, password } = req.body; // Added 'name' and 'username'
 
-    if (!name || !email || !password) {
+    if (!name || !username || !email || !password) {
       console.log("❌ Missing fields");
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -20,10 +20,17 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      console.log("❌ Username already exists");
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
       name,
+      username,
       email,
       password: hashedPassword,
     });
@@ -37,6 +44,7 @@ exports.registerUser = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 };
+
 
 // Login user
 exports.loginUser = async (req, res) => {
