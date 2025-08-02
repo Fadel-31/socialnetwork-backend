@@ -5,7 +5,6 @@ const FriendRequest = require("../models/FriendRequest");
 const User = require("../models/User");
 const Message = require("../models/Message");
 console.log("✅ friendsRoutes.js loaded");
-const Post = require("../models/Post");
 
 // Send a friend request
 router.post("/add/:userId", auth, async (req, res) => {
@@ -157,16 +156,6 @@ router.get("/list", auth, async (req, res) => {
   res.json(friendList);
 });
 
-// GET /api/posts/user/:userId
-router.get("/user/:userId", auth, async (req, res) => {
-  try {
-    const posts = await Post.find({ author: req.params.userId }).sort({ createdAt: -1 });
-    res.json(posts);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
 // GET /api/user/:id
 router.get("/:id", auth, async (req, res) => {
   try {
@@ -178,7 +167,15 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
-
+// GET /api/posts/user/:userId
+router.get("/user/:userId", auth, async (req, res) => {
+  try {
+    const posts = await Post.find({ author: req.params.userId }).sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // Unfriend a user
 router.post("/remove/:userId", auth, async (req, res) => {
