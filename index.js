@@ -67,7 +67,7 @@ const profileRoutes = require("./routes/profileRoutes");
  app.use("/api/auth", authRoutes);
  app.use("/api/posts", postRoutes);
  app.use("/api/friends", friendRoutes);
-// app.use("/api/stories", storyRoutes);
+ app.use("/api/stories", storyRoutes);
 // app.use("/api/messages", messageRoutes);
 
 // Test route
