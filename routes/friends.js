@@ -37,12 +37,10 @@ router.post("/add/:userId", auth, async (req, res) => {
 
 
 // Accept a friend request
+// Accept a friend request
 router.post("/accept/:requestId", auth, async (req, res) => {
   try {
     const request = await FriendRequest.findById(req.params.requestId);
-    if (!request || request.to.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized" });
-    }
     if (!request) {
       return res.status(404).json({ message: "Friend request not found" });
     }
@@ -50,13 +48,31 @@ router.post("/accept/:requestId", auth, async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
+    // Mark the request as accepted
     request.status = "accepted";
     await request.save();
+
+    // Add each user to the other's friends list if not already added
+    const fromUser = await User.findById(request.from);
+    const toUser = await User.findById(request.to);
+
+    if (!fromUser.friends.includes(toUser._id)) {
+      fromUser.friends.push(toUser._id);
+      await fromUser.save();
+    }
+
+    if (!toUser.friends.includes(fromUser._id)) {
+      toUser.friends.push(fromUser._id);
+      await toUser.save();
+    }
+
     res.json({ message: "Friend request accepted" });
   } catch (err) {
+    console.error("Error accepting friend request:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // Get all accepted friends
 router.get("/list", auth, async (req, res) => {
