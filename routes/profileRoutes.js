@@ -122,7 +122,7 @@ router.post(
   async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { coverPic: `/uploads/profile-pics/${req.file.filename}` },
+      { coverPic: `/uploads/profilePics/${req.file.filename}` },
       { new: true }
     );
     res.json({ message: "Cover picture updated", coverPic: user.coverPic });
