@@ -17,13 +17,11 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "https://socialnetwork-frontend-psi.vercel.app", // your frontend deployed URL
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // added missing methods
     credentials: true,
   },
   transports: ["websocket", "polling"], // explicit transports
 });
-
-
 
 // Socket.IO connection
 io.on("connection", (socket) => {
@@ -37,11 +35,10 @@ io.on("connection", (socket) => {
 
   // Handle chat messages
   socket.on("sendMessage", ({ sender, receiver, text }) => {
-  console.log(`💬 ${sender} → ${receiver}: ${text}`);
-  io.to(receiver).emit("newMessage", { sender, receiver, text });
-  io.to(sender).emit("newMessage", { sender, receiver, text });
-});
-
+    console.log(`💬 ${sender} → ${receiver}: ${text}`);
+    io.to(receiver).emit("newMessage", { sender, receiver, text });
+    io.to(sender).emit("newMessage", { sender, receiver, text });
+  });
 
   socket.on("disconnect", () => {
     console.log("❌ Client disconnected:", socket.id);
@@ -51,11 +48,15 @@ io.on("connection", (socket) => {
 // Make io accessible to routes
 app.set("io", io);
 
-
 // Middlewares
 app.use(cors({
   origin: "https://socialnetwork-frontend-psi.vercel.app",
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // match Socket.IO
+  credentials: true,
+}));
+app.options("*", cors({  // Handle preflight requests for all routes
+  origin: "https://socialnetwork-frontend-psi.vercel.app",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 }));
 app.use(express.json());
@@ -95,4 +96,4 @@ mongoose
   })
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-  module.exports = { app, server, io };
+module.exports = { app, server, io };
