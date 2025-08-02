@@ -5,25 +5,36 @@ const jwt = require("jsonwebtoken");
 // Register user
 exports.registerUser = async (req, res) => {
   try {
+    console.log("🔹 Register request body:", req.body);
+
     const { name, email, password } = req.body;
 
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "Email already in use" });
+    if (!name || !email || !password) {
+      console.log("❌ Missing fields");
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      console.log("❌ Email already exists");
+      return res.status(400).json({ message: "Email already exists" });
+    }
 
-    // Create user
-    const newUser = new User({ name, email, password: hashedPassword });
-    await newUser.save();
+    const hashedPassword = await bcrypt.hash(password, 10);
 
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    await user.save();
+
+    console.log("✅ User created:", user._id);
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.error("🔥 Error in registerUser:", err);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 };
 
