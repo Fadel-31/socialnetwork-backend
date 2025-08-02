@@ -51,7 +51,7 @@ app.set("io", io);
 // Middlewares
 app.use(cors({
   origin: "https://socialnetwork-frontend-psi.vercel.app",
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // match Socket.IO
+  methods: ["GET", "POST"], // match Socket.IO
   credentials: true,
 }));
 app.options("*", cors({  // Handle preflight requests for all routes
