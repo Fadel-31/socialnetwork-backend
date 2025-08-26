@@ -75,26 +75,26 @@ router.get("/:id", protect, async (req, res) => {
 });
 
 // Profile picture upload route
-router.post(
-  "/profile-pic",
-  protect,
-  uploadProfile.single("profilePic"),
-  async (req, res) => {
-    try {
-      if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+router.post("/profile-pic", protect, uploadProfile.single("profilePic"), async (req, res) => {
+  try {
+    console.log("req.user:", req.user);
+    console.log("req.file:", req.file);
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-      const user = await User.findByIdAndUpdate(
-        req.user.id,
-        { profilePic: `/uploads/profilePics/${req.file.filename}` },
-        { new: true }
-      );
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { profilePic: `/uploads/profilePics/${req.file.filename}` },
+      { new: true }
+    );
 
-      res.json({ message: "Profile picture updated", profilePic: user.profilePic });
-    } catch (err) {
-      res.status(500).json({ message: "Server error" });
-    }
+    console.log("Updated user:", user);
+    res.json({ message: "Profile picture updated", profilePic: user.profilePic });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
-);
+});
+
 
 // Cover picture upload route
 router.post(
