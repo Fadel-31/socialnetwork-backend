@@ -5,11 +5,6 @@ const authMiddleware = require("../middleware/authMiddleware");
 const multer = require("multer");
 const path = require("path");
 
-const fs = require("fs");
-const dir = "./uploads/stories/";
-if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-
 // Set up multer storage for media files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "./uploads/stories/"),
@@ -26,12 +21,9 @@ router.post(
   upload.single("media"),
   async (req, res) => {
     try {
-      console.log("req.user:", req.user); // <--- here, inside the route
-      console.log("req.file:", req.file);
-
       if (!req.file) return res.status(400).json({ message: "Media file required" });
 
-      const userId = req.user.id;
+      const userId = req.user.id; // not destructuring as userId from req.user
 
       const mediaUrl = `/uploads/stories/${req.file.filename}`;
       const mediaType = req.file.mimetype.startsWith("image/") ? "image" : "video";
@@ -46,12 +38,10 @@ router.post(
       await newStory.save();
       res.status(201).json({ message: "Story created successfully" });
     } catch (error) {
-      console.error("Story creation error:", error);
       res.status(500).json({ message: error.message });
     }
   }
 );
-
 // GET /api/stories - fetch all active stories (non-expired)
 // Get all current stories for the logged in user and/or their friends
 router.get("/", authMiddleware, async (req, res) => {

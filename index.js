@@ -77,8 +77,9 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true
   },
-  transports: ["websocket"] // force WebSocket
+  transports: ["polling", "websocket"] // allow polling first
 });
+
 
 io.on("connection", (socket) => {
   console.log("✅ New client connected:", socket.id);
