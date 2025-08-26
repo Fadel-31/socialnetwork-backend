@@ -4,6 +4,13 @@ const protect = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+const profilePath = "uploads/profilePics";
+const coverPath = "uploads/coverPics";
+
+if (!fs.existsSync(profilePath)) fs.mkdirSync(profilePath, { recursive: true });
+if (!fs.existsSync(coverPath)) fs.mkdirSync(coverPath, { recursive: true });
 
 // Multer storage for profile pictures
 const profileStorage = multer.diskStorage({
@@ -75,7 +82,7 @@ router.get("/:id", protect, async (req, res) => {
 });
 
 // Profile picture upload route
-router.post("/profile-pic", protect, uploadProfile.single("profilePic"), async (req, res) => {
+router.post("/upload-profile-pic", protect, uploadProfile.single("profilePic"), async (req, res) => {
   console.log("🔹 Profile upload route hit");
   console.log("req.user:", req.user);
   console.log("req.file:", req.file);
