@@ -4,6 +4,7 @@ const Story = require("../models/story");
 const authMiddleware = require("../middleware/authMiddleware");
 const multer = require("multer");
 const path = require("path");
+const User = require("../models/user"); // <--- Add this
 
 // Set up multer storage for media files
 const storage = multer.diskStorage({
@@ -43,17 +44,27 @@ router.post(
   }
 );
 // GET /api/stories - fetch all active stories (non-expired)
-// Get all current stories for the logged in user and/or their friends
+// GET /api/stories - fetch all active stories (non-expired)
+
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Fetch stories created within last 24 hours (MongoDB TTL will clean old ones anyway)
-    // Optionally filter stories from user's friends only
-    const stories = await Story.find({ isStory: true })
+    // Fetch current user and their friends
+    const user = await User.findById(userId).populate("friends", "_id");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Allowed user IDs = self + friends
+    const allowedUsers = [userId, ...user.friends.map(f => f._id)];
+
+    // Fetch stories only from allowed users
+    const stories = await Story.find({ 
+        userId: { $in: allowedUsers },
+        isStory: true
+      })
       .sort({ createdAt: -1 })
-      .populate("userId", "name profilePic") // populate user info for display
-      .populate("viewers", "name profilePic") // <-- add this line
+      .populate("userId", "name profilePic")
+      .populate("viewers", "name profilePic")
       .exec();
 
     res.json(stories);
@@ -62,6 +73,7 @@ router.get("/", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch stories" });
   }
 });
+
 
 // POST /api/stories/:storyId/view - mark story as viewed
 router.post("/:storyId/view", authMiddleware, async (req, res) => {
