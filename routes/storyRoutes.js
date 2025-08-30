@@ -4,7 +4,7 @@ const Story = require("../models/story");
 const authMiddleware = require("../middleware/authMiddleware");
 const multer = require("multer");
 const path = require("path");
-const User = require("../models/user"); // <--- Add this
+const User = require("../models/User"); // <--- Add this
 
 // Set up multer storage for media files
 const storage = multer.diskStorage({
