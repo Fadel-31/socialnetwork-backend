@@ -42,16 +42,47 @@ router.get("/", authMiddleware, async (req, res) => {
 
     const stories = await Story.find({ userId: { $in: allowedUsers }, isStory: true })
       .sort({ createdAt: -1 })
-      .populate("userId", "name email profilePic") // include email for owner check
+      .populate("userId", "name email profilePic") // include email
       .populate("viewers", "name profilePic")
       .exec();
 
-    res.json(stories);
+    // Group stories by user
+    const grouped = [];
+    const map = new Map();
+
+    stories.forEach(s => {
+      const uid = s.userId._id.toString();
+      if (!map.has(uid)) {
+        map.set(uid, { user: s.userId, stories: [] });
+      }
+      map.get(uid).stories.push(s);
+    });
+
+    res.json(Array.from(map.values()));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Failed to fetch stories" });
   }
 });
+
+// Delete a story
+router.delete("/:storyId", authMiddleware, async (req, res) => {
+  try {
+    const { storyId } = req.params;
+    const userId = req.user.id;
+
+    const story = await Story.findById(storyId);
+    if (!story) return res.status(404).json({ message: "Story not found" });
+    if (story.userId.toString() !== userId) return res.status(403).json({ message: "Not allowed" });
+
+    await story.remove();
+    res.json({ message: "Story deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to delete story" });
+  }
+});
+
 
 // Mark story as viewed
 router.post("/:storyId/view", authMiddleware, async (req, res) => {
